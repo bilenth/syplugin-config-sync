@@ -10,5 +10,17 @@
   "removedData": "Data deleted",
   "confirmRemove": "Confirm to delete the data in ${name}?",
   "insertEmoji": "Insert Emoji",
-  "removeSpace": "Remove Space"
+  "removeSpace": "Remove Space",
+  "configSync": "Config Sync",
+  "configSyncSettings": "Config Sync Settings",
+  "selectConfigToSync": "Select configurations to sync",
+  "syncNow": "Sync Now",
+  "lastSyncTime": "Last sync time",
+  "localNewer": "Local config is newer",
+  "cloudNewer": "Cloud config is newer",
+  "syncConflict": "Sync Conflict",
+  "useLocal": "Use Local Config",
+  "useCloud": "Use Cloud Config",
+  "syncSuccess": "Sync Successful",
+  "syncFailed": "Sync Failed"
 }

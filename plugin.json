@@ -1,8 +1,8 @@
 {
-  "name": "plugin-sample",
-  "author": "Vanessa",
-  "url": "https://github.com/siyuan-note/plugin-sample",
-  "version": "0.4.1",
+  "name": "syplugin-config-sync",
+  "author": "Brian",
+  "url": "https://github.com/yourusername/syplugin-config-sync",
+  "version": "0.1.0",
   "minAppVersion": "3.2.1",
   "backends": [
     "windows",
@@ -21,12 +21,12 @@
     "desktop-window"
   ],
   "displayName": {
-    "default": "Plugin Sample",
-    "zh_CN": "插件示例"
+    "default": "Config Sync",
+    "zh_CN": "配置同步"
   },
   "description": {
-    "default": "This is a plugin sample",
-    "zh_CN": "这是一个插件示例"
+    "default": "Sync selected global configuration values",
+    "zh_CN": "同步选定的配置值"
   },
   "readme": {
     "default": "README.md",
@@ -41,7 +41,9 @@
     ]
   },
   "keywords": [
-    "sample",
-    "示例"
+    "config",
+    "sync",
+    "配置",
+    "同步"
   ]
 }

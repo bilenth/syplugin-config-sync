@@ -1,22 +1,29 @@
-.plugin-sample {
-  &__custom-tab {
-    background-color: var(--b3-theme-background);
-    height: 100%;
+.config-sync {
+  &-container {
+    padding: 16px 0;
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
 
-  &__custom-dock {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  &-title {
+    font-weight: bold;
+    margin-bottom: 16px;
   }
 
-  &__time {
-    background: var(--b3-card-info-background);
+  &-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--b3-border-color);
     border-radius: 4px;
-    padding: 2px 8px;
+    padding: 8px;
+    margin-bottom: 16px;
+  }
+
+  &-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--b3-border-color);
+    
+    &:last-child {
+      border-bottom: none;
+    }
   }
 }

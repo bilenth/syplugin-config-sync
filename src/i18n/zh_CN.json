@@ -10,5 +10,17 @@
   "removedData": "数据已删除",
   "confirmRemove": "确认删除 ${name} 中的数据？",
   "insertEmoji": "插入表情",
-  "removeSpace": "移除空格"
+  "removeSpace": "移除空格",
+  "configSync": "配置同步",
+  "configSyncSettings": "配置同步设置",
+  "selectConfigToSync": "选择要同步的配置项",
+  "syncNow": "立即同步",
+  "lastSyncTime": "上次同步时间",
+  "localNewer": "本地配置较新",
+  "cloudNewer": "云端配置较新",
+  "syncConflict": "同步冲突",
+  "useLocal": "使用本地配置",
+  "useCloud": "使用云端配置",
+  "syncSuccess": "同步成功",
+  "syncFailed": "同步失败"
 }
