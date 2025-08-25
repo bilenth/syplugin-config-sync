@@ -159,9 +159,9 @@ export default class ConfigSyncPlugin extends Plugin {
     }
 
     private async setLocalStorageAsync(config: SyncConfig) {
-        return await fetch("/api/storage/setLocalStorage", {
+        return await fetch("/api/storage/setLocalStorageVal", {
             method: "POST",
-            body: JSON.stringify({ key: STORAGE_NAME, value: config }),
+            body: JSON.stringify({ app: STORAGE_NAME, key: STORAGE_NAME, val: config }),
         })
     }
 
