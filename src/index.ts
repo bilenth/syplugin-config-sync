@@ -80,9 +80,6 @@ export default class ConfigSyncPlugin extends Plugin {
             return;
         }
 
-        // 初始化设置面板
-        this.initSettingPanel();
-
         this.eventBus.on("sync-end", async () => {
             const localConfig: SyncConfig = await this.getLocalStorageAsync();
             const couldConfig: SyncConfig = await this.loadData(STORAGE_NAME);
@@ -108,23 +105,85 @@ export default class ConfigSyncPlugin extends Plugin {
         });
 
 
-        //         // 图标的制作参见帮助文档
-        //         this.addIcons(`<symbol id="iconConfigSync" viewBox="0 0 32 32">
-        // <path d="M27.802 5.197c-2.925-3.194-7.13-5.197-11.803-5.197-8.837 0-16 7.163-16 16h3c0-7.18 5.82-13 13-13 3.844 0 7.298 1.669 9.678 4.322l-4.678 4.678h11v-11l-4.198 4.197zM29 16c0 7.18-5.82 13-13 13-3.844 0-7.298-1.669-9.678-4.322l4.678-4.678h-11v11l4.197-4.197c2.925 3.194 7.13 5.197 11.803 5.197 8.837 0 16-7.163 16-16h-3z"></path>
-        // </symbol>`);
+        // 图标的制作参见帮助文档
+        this.addIcons(`<symbol id="iconConfigSync" viewBox="0 0 32 32">
+            <path d="M0 0 C10.56 0 21.12 0 32 0 C32 10.56 32 21.12 32 32 C21.44 32 10.88 32 0 32 C0 21.44 0 10.88 0 0 Z " fill="#FAFAFC" transform="translate(0,0)"/>
+            <path d="M0 0 C2.56282742 0.72965366 2.56282742 0.72965366 5 1 C5.66 0.34 6.32 -0.32 7 -1 C9.625 -0.625 9.625 -0.625 12 0 C12 2.31 12 4.62 12 7 C15.465 8.485 15.465 8.485 19 10 C19.25 16.625 19.25 16.625 17 20 C16.87625 20.680625 16.7525 21.36125 16.625 22.0625 C16 24 16 24 13.9375 25.25 C13.298125 25.4975 12.65875 25.745 12 26 C12.66 24.68 13.32 23.36 14 22 C11.87436897 22.11376617 9.7494739 22.24135631 7.625 22.375 C5.84996094 22.47941406 5.84996094 22.47941406 4.0390625 22.5859375 C0.89437681 22.70217346 0.89437681 22.70217346 -1 25 C-3.625 24.625 -3.625 24.625 -6 24 C-6 21.33333333 -6 18.66666667 -6 16 C-7.65 15.67 -9.3 15.34 -11 15 C-11 13.02 -11 11.04 -11 9 C-9.35 8.34 -7.7 7.68 -6 7 C-6 4.69 -6 2.38 -6 0 C-3.44211818 -1.27894091 -2.70140697 -0.77183056 0 0 Z " fill="#F4F5F9" transform="translate(13,4)"/>
+            <path d="M0 0 C2.56282742 0.72965366 2.56282742 0.72965366 5 1 C5.66 0.34 6.32 -0.32 7 -1 C9.625 -0.625 9.625 -0.625 12 0 C12 2.31 12 4.62 12 7 C13.65 7.66 15.3 8.32 17 9 C17 10.98 17 12.96 17 15 C16.67 15 16.34 15 16 15 C16 13.35 16 11.7 16 10 C15.21625 10.04125 14.4325 10.0825 13.625 10.125 C11 10 11 10 9 8 C9.375 4.375 9.375 4.375 10 1 C9.46375 1.495 8.9275 1.99 8.375 2.5 C5.31754465 4.43102443 3.561827 4.44522837 0 4 C-2.375 2.5 -2.375 2.5 -4 1 C-3.67 3.31 -3.34 5.62 -3 8 C-6.625 11 -6.625 11 -10 11 C-10 11.66 -10 12.32 -10 13 C-9.21625 13.12375 -8.4325 13.2475 -7.625 13.375 C-5 14 -5 14 -3 16 C-3.375 19.625 -3.375 19.625 -4 23 C-2.35 22.34 -0.7 21.68 1 21 C0.34 22.32 -0.32 23.64 -1 25 C-2.65 24.67 -4.3 24.34 -6 24 C-6 21.33333333 -6 18.66666667 -6 16 C-7.65 15.67 -9.3 15.34 -11 15 C-11 13.02 -11 11.04 -11 9 C-9.35 8.34 -7.7 7.68 -6 7 C-6 4.69 -6 2.38 -6 0 C-3.44211818 -1.27894091 -2.70140697 -0.77183056 0 0 Z " fill="#97A3CB" transform="translate(13,4)"/>
+            <path d="M0 0 C4.95 0 9.9 0 15 0 C14 4 14 4 11.9375 5.25 C10.9784375 5.62125 10.9784375 5.62125 10 6 C10.66 4.68 11.32 3.36 12 2 C8.04 2 4.08 2 0 2 C0 1.34 0 0.68 0 0 Z " fill="#2D48B9" transform="translate(15,24)"/>
+            <path d="M0 0 C0.66 0 1.32 0 2 0 C1.67 1.32 1.34 2.64 1 4 C4.63 4 8.26 4 12 4 C12 4.66 12 5.32 12 6 C7.05 6 2.1 6 -3 6 C-2 4 -1 2 0 0 Z " fill="#2D49B9" transform="translate(18,16)"/>
+            <path d="M0 0 C1.4540625 0.0309375 1.4540625 0.0309375 2.9375 0.0625 C3.2675 1.0525 3.5975 2.0425 3.9375 3.0625 C2.2875 2.7325 0.6375 2.4025 -1.0625 2.0625 C-1.0625 3.3825 -1.0625 4.7025 -1.0625 6.0625 C-1.0625 6.7225 -1.0625 7.3825 -1.0625 8.0625 C-2.0525 7.7325 -3.0425 7.4025 -4.0625 7.0625 C-4.10504356 5.06295254 -4.10330783 3.06208364 -4.0625 1.0625 C-3.0625 0.0625 -3.0625 0.0625 0 0 Z " fill="#99A4CB" transform="translate(16.0625,11.9375)"/>
+        </symbol>`);
 
-        //         // 添加顶部菜单按钮
-        //         this.addTopBar({
-        //             icon: "iconConfigSync",
-        //             title: this.i18n.configSync,
-        //             position: "right",
-        //             callback: () => {
-        //                 this.initSettingPanel();
-        //             }
-        //         });
+        // 添加顶部菜单按钮
+        this.addTopBar({
+            icon: "iconConfigSync",
+            title: this.i18n.configSyncSettings,
+            position: "right",
+            callback: () => {
+                this.openSetting();
+            }
+        });
 
 
         console.log(this.i18n.helloPlugin);
+    }
+
+    // 自定义设置
+    async openSetting() {
+        const selectedKeys = (await this.getLocalStorageAsync()).selectedKeys;
+        // 生成复选框列表HTML
+        const checkboxList = this.selectOptions.map(option => {
+            const isChecked = selectedKeys.includes(option) ? 'checked' : '';
+            return `
+                <label class="fn__flex" style="align-items: center; margin-bottom: 8px;">
+                    <input type="checkbox" 
+                           class="b3-switch fn__flex-shrink" 
+                           value="${option}" 
+                           ${isChecked}>
+                    <span class="fn__space"></span>
+                    <span style="margin-top: 0;">${option}</span>
+                </label>
+            `;
+        }).join('');
+
+        const dialog = new Dialog({
+            title: this.i18n.configSyncSettings,
+            content: `<div class="b3-dialog__content">
+                <div class="fn__flex-column" style="max-height: 350px; overflow-y: auto;">
+                    ${checkboxList}
+                </div>
+            </div>
+            <div class="b3-dialog__action">
+                <button class="b3-button b3-button--cancel">${this.i18n.cancel}</button><div class="fn__space"></div>
+                <button class="b3-button b3-button--text">${this.i18n.save}</button>
+            </div>`,
+            width: this.isMobile ? "92vw" : "520px",
+        });
+        const checkboxElements = dialog.element.querySelectorAll('input[type="checkbox"]');
+        const btnsElement = dialog.element.querySelectorAll(".b3-button");
+
+        btnsElement[0].addEventListener("click", () => {
+            dialog.destroy();
+        });
+        btnsElement[1].addEventListener("click", async () => {
+            // 获取选中的复选框值
+            const selectedOptions: string[] = [];
+            checkboxElements.forEach((checkbox: HTMLInputElement) => {
+                if (checkbox.checked) {
+                    selectedOptions.push(checkbox.value);
+                }
+            });
+            // 打印所有选中项到控制台
+            console.log("选中的配置项:", selectedOptions);
+            // 更新selectDefault
+            const localConfig = await this.getLocalStorageAsync();
+            localConfig.selectedKeys = selectedOptions;
+            localConfig.time = Date.now();
+            await this.setLocalStorageAsync(localConfig);
+            this.saveData(STORAGE_NAME, localConfig);
+            dialog.destroy();
+        });
     }
 
     // 初始化配置数据结构
@@ -194,75 +253,6 @@ export default class ConfigSyncPlugin extends Plugin {
         }
     }
 
-    // 初始化设置面板
-    private initSettingPanel() {
-        const config = this.data[STORAGE_NAME] as SyncConfig;
-        this.setting = new Setting({
-            confirmCallback: () => {
-                this.saveData(STORAGE_NAME, config);
-                showMessage(this.i18n.save);
-            }
-        });
-
-        // 添加同步配置选择区域
-        const syncConfigContainer = document.createElement("div");
-        syncConfigContainer.className = "config-sync-container";
-
-        // 添加标题
-        const titleElement = document.createElement("div");
-        titleElement.className = "config-sync-title b3-label";
-        titleElement.textContent = this.i18n.selectConfigToSync;
-        syncConfigContainer.appendChild(titleElement);
-
-        // 添加配置项列表
-        const configListElement = document.createElement("div");
-        configListElement.className = "config-sync-list";
-        syncConfigContainer.appendChild(configListElement);
-
-        // 使用selectOptions创建复选框列表
-        this.selectOptions.forEach(key => {
-            const itemElement = document.createElement("label");
-            itemElement.className = "fn__flex b3-label config-sync-item";
-
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.className = "b3-switch fn__flex-center";
-            checkbox.checked = config?.selectedKeys?.includes(key) || false;
-            checkbox.addEventListener("change", () => {
-                if (!config.selectedKeys) {
-                    config.selectedKeys = this.selectDefault;
-                }
-
-                if (checkbox.checked) {
-                    if (!config.selectedKeys.includes(key)) {
-                        config.selectedKeys.push(key);
-                    }
-                } else {
-                    const index = config.selectedKeys.indexOf(key);
-                    if (index > -1) {
-                        config.selectedKeys.splice(index, 1);
-                    }
-                }
-            });
-
-            const textElement = document.createElement("span");
-            textElement.className = "fn__space";
-            textElement.textContent = key;
-
-            itemElement.appendChild(checkbox);
-            itemElement.appendChild(textElement);
-            configListElement.appendChild(itemElement);
-        });
-
-        // 添加到设置面板
-        this.setting.addItem({
-            title: this.i18n.configSync,
-            description: this.i18n.selectConfigToSync,
-            createActionElement: () => {
-                return syncConfigContainer;
-            }
-        });
-    }
 
 
     onunload() {
@@ -271,264 +261,5 @@ export default class ConfigSyncPlugin extends Plugin {
 
     uninstall() {
         console.log("uninstall");
-    }
-
-    async updateCards(options: ICardData) {
-        options.cards.sort((a: ICard, b: ICard) => {
-            if (a.blockID < b.blockID) {
-                return -1;
-            }
-            if (a.blockID > b.blockID) {
-                return 1;
-            }
-            return 0;
-        });
-        return options;
-    }
-
-    /* 自定义设置
-    openSetting() {
-        const dialog = new Dialog({
-            title: this.name,
-            content: `<div class="b3-dialog__content"><textarea class="b3-text-field fn__block" placeholder="readonly text in the menu"></textarea></div>
-<div class="b3-dialog__action">
-    <button class="b3-button b3-button--cancel">${this.i18n.cancel}</button><div class="fn__space"></div>
-    <button class="b3-button b3-button--text">${this.i18n.save}</button>
-</div>`,
-            width: this.isMobile ? "92vw" : "520px",
-        });
-        const inputElement = dialog.element.querySelector("textarea");
-        inputElement.value = this.data[STORAGE_NAME].readonlyText;
-        const btnsElement = dialog.element.querySelectorAll(".b3-button");
-        dialog.bindInput(inputElement, () => {
-            (btnsElement[1] as HTMLButtonElement).click();
-        });
-        inputElement.focus();
-        btnsElement[0].addEventListener("click", () => {
-            dialog.destroy();
-        });
-        btnsElement[1].addEventListener("click", () => {
-            this.saveData(STORAGE_NAME, {readonlyText: inputElement.value});
-            dialog.destroy();
-        });
-    }
-    */
-
-
-    private showDialog() {
-        const dialog = new Dialog({
-            title: `SiYuan ${Constants.SIYUAN_VERSION}`,
-            content: `<div class="b3-dialog__content">
-    <div>appId:</div>
-    <div class="fn__hr"></div>
-    <div class="plugin-sample__time">${this.app.appId}</div>
-    <div class="fn__hr"></div>
-    <div class="fn__hr"></div>
-    <div>API demo:</div>
-    <div class="fn__hr"></div>
-    <div class="plugin-sample__time">System current time: <span id="time"></span></div>
-    <div class="fn__hr"></div>
-    <div class="fn__hr"></div>
-    <div>Protyle demo:</div>
-    <div class="fn__hr"></div>
-    <div id="protyle" style="height: 360px;"></div>
-</div>`,
-            width: this.isMobile ? "92vw" : "560px",
-            height: "540px",
-        });
-        new Protyle(this.app, dialog.element.querySelector("#protyle"), {
-            blockId: this.getEditor().protyle.block.rootID,
-        });
-        fetchPost("/api/system/currentTime", {}, (response) => {
-            dialog.element.querySelector("#time").innerHTML = new Date(response.data).toString();
-        });
-    }
-
-    private addMenu(rect?: DOMRect) {
-        const menu = new Menu("topBarSample", () => {
-            console.log(this.i18n.byeMenu);
-        });
-        menu.addItem({
-            icon: "iconSettings",
-            label: "Open Setting",
-            click: () => {
-                openSetting(this.app);
-            }
-        });
-        menu.addItem({
-            icon: "iconDrag",
-            label: "Open Attribute Panel",
-            click: () => {
-                openAttributePanel({
-                    nodeElement: this.getEditor().protyle.wysiwyg.element.firstElementChild as HTMLElement,
-                    protyle: this.getEditor().protyle,
-                    focusName: "custom",
-                });
-            }
-        });
-        menu.addItem({
-            icon: "iconInfo",
-            label: "Dialog(open doc first)",
-            accelerator: this.commands[0].customHotkey,
-            click: () => {
-                this.showDialog();
-            }
-        });
-        menu.addItem({
-            icon: "iconFocus",
-            label: "Select Opened Doc(open doc first)",
-            click: () => {
-                (getModelByDockType("file") as Files).selectItem(this.getEditor().protyle.notebookId, this.getEditor().protyle.path);
-            }
-        });
-        if (!this.isMobile) {
-            menu.addItem({
-                icon: "iconFace",
-                label: "Open Custom Tab",
-                click: () => {
-                    const tab = openTab({
-                        app: this.app,
-                        custom: {
-                            icon: "iconFace",
-                            title: "Custom Tab",
-                            data: {
-                                text: platformUtils.isHuawei() ? "Hello, Huawei!" : "This is my custom tab",
-                            },
-                            id: this.name + TAB_TYPE
-                        },
-                    });
-                    console.log(tab);
-                }
-            });
-            menu.addItem({
-                icon: "iconImage",
-                label: "Open Asset Tab(First open the Chinese help document)",
-                click: () => {
-                    const tab = openTab({
-                        app: this.app,
-                        asset: {
-                            path: "assets/paragraph-20210512165953-ag1nib4.svg"
-                        }
-                    });
-                    console.log(tab);
-                }
-            });
-            menu.addItem({
-                icon: "iconFile",
-                label: "Open Doc Tab(open doc first)",
-                click: async () => {
-                    const tab = await openTab({
-                        app: this.app,
-                        doc: {
-                            id: this.getEditor().protyle.block.rootID,
-                        }
-                    });
-                    console.log(tab);
-                }
-            });
-            menu.addItem({
-                icon: "iconSearch",
-                label: "Open Search Tab",
-                click: () => {
-                    const tab = openTab({
-                        app: this.app,
-                        search: {
-                            k: "SiYuan"
-                        }
-                    });
-                    console.log(tab);
-                }
-            });
-            menu.addItem({
-                icon: "iconRiffCard",
-                label: "Open Card Tab",
-                click: () => {
-                    const tab = openTab({
-                        app: this.app,
-                        card: {
-                            type: "all"
-                        }
-                    });
-                    console.log(tab);
-                }
-            });
-            menu.addItem({
-                icon: "iconLayout",
-                label: "Open Float Layer(open doc first)",
-                click: () => {
-                    this.addFloatLayer({
-                        refDefs: [{ refID: this.getEditor().protyle.block.rootID }],
-                        x: window.innerWidth - 768 - 120,
-                        y: 32,
-                        isBacklink: false
-                    });
-                }
-            });
-            menu.addItem({
-                icon: "iconOpenWindow",
-                label: "Open Doc Window(open doc first)",
-                click: () => {
-                    openWindow({
-                        doc: { id: this.getEditor().protyle.block.rootID }
-                    });
-                }
-            });
-        } else {
-            menu.addItem({
-                icon: "iconFile",
-                label: "Open Doc(open doc first)",
-                click: () => {
-                    openMobileFileById(this.app, this.getEditor().protyle.block.rootID);
-                }
-            });
-        }
-        menu.addItem({
-            icon: "iconLock",
-            label: "Lockscreen",
-            click: () => {
-                lockScreen(this.app);
-            }
-        });
-        menu.addItem({
-            icon: "iconQuit",
-            label: "Exit Application",
-            click: () => {
-                exitSiYuan();
-            }
-        });
-        menu.addItem({
-            icon: "iconDownload",
-            label: "Save Layout",
-            click: () => {
-                saveLayout(() => {
-                    showMessage("Layout saved");
-                });
-            }
-        });
-
-        menu.addSeparator();
-        menu.addItem({
-            icon: "iconSparkles",
-            label: this.data[STORAGE_NAME].readonlyText || "Readonly",
-            type: "readonly",
-        });
-        if (this.isMobile) {
-            menu.fullscreen();
-        } else {
-            menu.open({
-                x: rect.right,
-                y: rect.bottom,
-                isLeft: true,
-            });
-        }
-    }
-
-    private getEditor() {
-        const editors = getAllEditor();
-        if (editors.length === 0) {
-            showMessage("please open doc first");
-            return;
-        }
-        return editors[0];
     }
 }
