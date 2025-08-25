@@ -36,6 +36,12 @@ const STORAGE_NAME = "config-sync";
 const TAB_TYPE = "custom_tab";
 const DOCK_TYPE = "dock_tab";
 
+export interface IResponse {
+    readonly code: number;
+    readonly data: Record<string, any>;
+    readonly msg: string;
+}
+
 type SyncConfig = {
     selectedKeys: string[];
     data: Record<string, any>;
@@ -135,7 +141,14 @@ export default class ConfigSyncPlugin extends Plugin {
     // }
 
     private async getLocalStorageAsync(): Promise<SyncConfig> {
-        const storage: SyncConfig = this.data[STORAGE_NAME];
+        let storage: SyncConfig = this.data[STORAGE_NAME];
+        if (!storage) {
+            storage = await fetch("/api/storage/getLocalStorage", {
+                method: "POST",
+            })
+                .then(res => res.json() as Promise<IResponse>)
+                .then(res => res.data[STORAGE_NAME]);
+        }
         const keys = storage?.selectedKeys ?? this.selectDefault;
         const data = await this.getConfFileAsync(keys);
         return {
@@ -146,13 +159,10 @@ export default class ConfigSyncPlugin extends Plugin {
     }
 
     private async setLocalStorageAsync(config: SyncConfig) {
-        return await fetch("/api/storage/setLocalStorageVal", {
-            referrerPolicy: "strict-origin-when-cross-origin",
-            body: JSON.stringify(config),
+        return await fetch("/api/storage/setLocalStorage", {
             method: "POST",
-            mode: "cors",
-            credentials: "include",
-        });
+            body: JSON.stringify({ key: STORAGE_NAME, value: config }),
+        })
     }
 
     private async getConfFileAsync(keys: string[]): Promise<Record<string, any>> {

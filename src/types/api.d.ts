@@ -63,3 +63,18 @@ interface IResForwardProxy {
 interface IResExportResources {
     path: string;
 }
+
+/**
+ * Get persisted locally stored content
+ */
+export interface IResponse {
+    /**
+     * status code
+     */
+    readonly code: number;
+    readonly data: { [key: string]: any };
+    /**
+     * status message
+     */
+    readonly msg: string;
+}
