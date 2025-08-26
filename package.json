@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "eslint . --fix --cache",
     "dev": "webpack --mode development",
+    "watch": "webpack --mode development --output-path dist",
     "build": "webpack --mode production"
   },
   "keywords": [],
