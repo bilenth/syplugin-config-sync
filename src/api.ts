@@ -6,7 +6,21 @@
  * API 文档见 [API_zh_CN.md](https://github.com/siyuan-note/siyuan/blob/master/API_zh_CN.md)
  */
 
-import { fetchSyncPost, IWebSocketData } from "siyuan";
+import { fetchSyncPost, IWebSocketData, Config } from "siyuan";
+import {
+  IReslsNotebooks,
+  IResGetNotebookConf,
+  IResUpload,
+  IResdoOperations,
+  IResGetBlockKramdown,
+  IResGetChildBlock,
+  IResGetTemplates,
+  IResReadDir,
+  IResExportMdContent,
+  IResExportResources,
+  IResBootProgress,
+  IResForwardProxy,
+} from './types/api';
 
 
 async function request(url: string, data: any) {
@@ -413,6 +427,10 @@ export async function forwardProxy(
 
 
 // **************************************** System ****************************************
+
+export async function getConf(): Promise<Config.IConf> {
+  return request('/api/system/getConf', {}).then(res => res.conf as Config.IConf);
+}
 
 export async function bootProgress(): Promise<IResBootProgress> {
   return request('/api/system/bootProgress', {});

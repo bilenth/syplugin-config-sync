@@ -15,9 +15,7 @@
   ],
   "frontends": [
     "desktop",
-    "mobile",
     "browser-desktop",
-    "browser-mobile",
     "desktop-window"
   ],
   "displayName": {
@@ -36,9 +34,7 @@
     "openCollective": "",
     "patreon": "",
     "github": "",
-    "custom": [
-      "https://ld246.com/sponsor"
-    ]
+    "custom": []
   },
   "keywords": [
     "config",

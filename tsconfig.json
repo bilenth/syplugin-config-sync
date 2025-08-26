@@ -5,6 +5,7 @@
     "target": "es2016"
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/**/*.d.ts"
   ],
 }

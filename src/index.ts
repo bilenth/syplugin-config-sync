@@ -28,7 +28,7 @@ import {
     openAttributePanel,
     saveLayout,
 } from "siyuan";
-import { readDir, getFile, putFile } from "./api";
+import { readDir, getFile, putFile, getConf } from "./api";
 import "./index.scss";
 import { IMenuItem } from "siyuan/types";
 
@@ -48,30 +48,42 @@ type SyncConfig = {
     time: number;
 }
 
+
 export default class ConfigSyncPlugin extends Plugin {
 
-    private custom: () => Custom;
     private isMobile: boolean;
-    private selectOptions = ['logLevel', 'appearance', 'langs', 'lang', 'fileTree', 'tag', 'editor', 'export', 'graph', 'uiLayout', 'userData', 'account', 'readonly', 'localIPs', 'accessAuthCode', 'system', 'keymap', 'sync', 'search', 'flashcard', 'ai', 'bazaar', 'stat', 'api', 'repo', 'publish', 'openHelp', 'showChangelog', 'cloudRegion', 'snippet', 'dataIndexState']
-    private selectDefault = ['logLevel', 'appearance', 'fileTree', 'tag', 'editor', 'graph', 'uiLayout', 'account', 'keymap', 'search', 'flashcard', 'ai', 'bazaar', 'stat', 'openHelp', 'showChangelog', 'cloudRegion', 'snippet', 'dataIndexState'];
+    private syncActions = {
+        keymap: { set: (data: any) => fetchPost("/api/setting/setKeymap", { data: data }, () => { window.siyuan.config.keymap = data; }) },
+        account: { set: (data: any) => fetchPost("/api/setting/setAccount", data, () => { window.siyuan.config.account = data; }) },
+        editor: { set: (data: any) => fetchPost("/api/setting/setEditor", data, () => { window.siyuan.config.editor = data; }) },
+        export: { set: (data: any) => fetchPost("/api/setting/setExport", data, () => { window.siyuan.config.export = data; }) },
+        filetree: { set: (data: any) => fetchPost("/api/setting/setFiletree", data, () => { window.siyuan.config.filetree = data; }) },
+        search: { set: (data: any) => fetchPost("/api/setting/setSearch", data, () => { window.siyuan.config.search = data; }) },
+        appearance: { set: (data: any) => fetchPost("/api/setting/setAppearance", data, () => { window.siyuan.config.appearance = data; }) },
+        flashcard: { set: (data: any) => fetchPost("/api/setting/setFlashcard", data, () => { window.siyuan.config.flashcard = data; }) },
+        ai: { set: (data: any) => fetchPost("/api/setting/setAI", data, () => { window.siyuan.config.ai = data; }) },
+        bazaar: { set: (data: any) => fetchPost("/api/setting/setBazaar", data, () => { window.siyuan.config.bazaar = data; }) },
+        publish: { set: (data: any) => fetchPost("/api/setting/setPublish", data, () => { window.siyuan.config.publish = data; }) },
+        snippet: { set: (data: any) => fetchPost("/api/setting/setSnippet", data, () => { window.siyuan.config.snippet = data; }) },
+        readonly: { set: (data: any) => fetchPost("/api/setting/setEditorReadOnly", data, () => { window.siyuan.config.readonly = data; }) },
+        // emoji: {set:"/api/setting/setEmoji"},
+    };
+    private selectDefault: (keyof typeof this.syncActions)[] = ['account', 'editor', 'filetree', 'search', 'keymap', 'appearance', 'flashcard', 'ai', 'bazaar', 'snippet'];
 
-    updateProtyleToolbar(toolbar: Array<string | IMenuItem>) {
-        toolbar.push("|");
-        toolbar.push({
-            name: "insert-smail-emoji",
-            icon: "iconEmoji",
-            hotkey: "⇧⌘I",
-            tipPosition: "n",
-            tip: this.i18n.insertEmoji,
-            click(protyle: Protyle) {
-                protyle.insert("😊");
-            }
-        });
-        return toolbar;
-    }
 
     async onload() {
-        console.log(this.i18n.helloPlugin);
+        // const config = await this.getLocalStorageAsync();
+        // if (config.data.logLevel !== "info") {
+        //     config.data.logLevel = "info";
+        //     await this.setConfFile2Async(config.data, config.time);
+        //     // window.location.reload();
+        // }
+        // return;
+        // Wait for 5 seconds before continuing
+        // await new Promise(resolve => setTimeout(resolve, 5000));
+        // this.reloadConfirm(this.selectDefault);
+        // console.log(await getConf());
+        // return;
 
         const frontEnd = getFrontend();
         this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
@@ -95,7 +107,7 @@ export default class ConfigSyncPlugin extends Plugin {
             if (couldConfig?.time > localConfig?.time) {
                 console.log("配置下载");
                 await this.setLocalStorageAsync(couldConfig);
-                await this.setConfFileAsync(couldConfig.data, couldConfig.time);
+                await this.setConfigAsync(couldConfig.data, couldConfig.time);
             } else {
                 console.log("配置上传");
                 localConfig.time = Date.now();
@@ -103,7 +115,6 @@ export default class ConfigSyncPlugin extends Plugin {
                 await this.saveData(STORAGE_NAME, localConfig);
             }
         });
-
 
         // 图标的制作参见帮助文档
         this.addIcons(`<symbol id="iconConfigSync" viewBox="0 0 32 32">
@@ -125,7 +136,6 @@ export default class ConfigSyncPlugin extends Plugin {
             }
         });
 
-
         console.log(this.i18n.helloPlugin);
     }
 
@@ -133,7 +143,7 @@ export default class ConfigSyncPlugin extends Plugin {
     async openSetting() {
         const selectedKeys = (await this.getLocalStorageAsync()).selectedKeys;
         // 生成复选框列表HTML
-        const checkboxList = this.selectOptions.map(option => {
+        const checkboxList = Object.keys(this.syncActions).map(option => {
             const isChecked = selectedKeys.includes(option) ? 'checked' : '';
             return `
                 <label class="fn__flex" style="align-items: center; margin-bottom: 8px;">
@@ -186,6 +196,19 @@ export default class ConfigSyncPlugin extends Plugin {
         });
     }
 
+    private isSyncActionKey(key: string): key is keyof typeof this.syncActions {
+        return key in this.syncActions;
+    }
+
+    private reloadConfirm(keys: string[]) {
+        confirm(
+            this.i18n.configSyncReload,
+            JSON.stringify(keys),
+            () => {
+                window.location.reload();
+            }
+        )
+    }
     // 初始化配置数据结构
     // private async initDataAsync() {
     //     if (!this.data[STORAGE_NAME] || this.data[STORAGE_NAME] == "undefined") {
@@ -201,6 +224,7 @@ export default class ConfigSyncPlugin extends Plugin {
 
     private async getLocalStorageAsync(): Promise<SyncConfig> {
         let storage: SyncConfig = this.data[STORAGE_NAME];
+        const time = storage?.time ?? 0;
         if (!storage) {
             storage = await fetch("/api/storage/getLocalStorage", {
                 method: "POST",
@@ -209,11 +233,11 @@ export default class ConfigSyncPlugin extends Plugin {
                 .then(res => res.data[STORAGE_NAME]);
         }
         const keys = storage?.selectedKeys ?? this.selectDefault;
-        const data = await this.getConfFileAsync(keys);
+        const data = await this.getConfigAsync(keys);
         return {
             selectedKeys: keys,
             data: data,
-            time: storage?.time ?? 0,
+            time: time,
         };
     }
 
@@ -224,13 +248,14 @@ export default class ConfigSyncPlugin extends Plugin {
         })
     }
 
-    private async getConfFileAsync(keys: string[]): Promise<Record<string, any>> {
+    private async getConfigAsync(keys: string[]): Promise<Record<string, any>> {
         try {
-            const data = await getFile("/conf/conf.json");
+            // const data = await getFile("/conf/conf.json");
+            const data = await getConf();
             // const time = await readDir("/conf").then((res) => res.find(e => e.isDir === false && e.name === "conf.json")?.updated ?? 0);
             let result: Record<string, any> = {};
             keys.forEach(key => {
-                result[key] = data[key];
+                result[key] = (data as Record<string, any>)[key];
             })
             return result;
         } catch (error) {
@@ -239,19 +264,54 @@ export default class ConfigSyncPlugin extends Plugin {
         }
     }
 
-    private async setConfFileAsync(data: Record<string, any>, time: number) {
+    private async setConfigAsync(data: Record<string, any>, time: number) {
         try {
             const source = await getFile("/conf/conf.json");
-            const jsonString = JSON.stringify({ ...source, ...data }, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/json' });
-            await putFile("/conf/conf.json", false, blob);
-            return true;
+            let updatedKeys = [];
+            for (const key in data) {
+                if (this.isSyncActionKey(key) && JSON.stringify(source[key]) !== JSON.stringify(data[key])) {
+                    console.log("updatedkey", key);
+                    updatedKeys.push(key);
+                    this.syncActions[key].set(data[key]);
+                }
+            }
+            this.reloadConfirm(updatedKeys);
         } catch (error) {
-            console.error("保存失败");
-            console.error("Failed to set conf.json file:", error);
-            return false;
+            console.error("保存失败", error);
         }
     }
+
+    // private async setSettingAsync(key: string, value: Record<string, any>) {
+    //     try {
+    //         const api = "/api/setting/set" + key[0].toUpperCase() + key.substring(1);
+    //         await fetch(api, {
+    //             method: "POST",
+    //             body: JSON.stringify(value),
+    //         });
+    //     } catch (error) {
+    //         console.error("配置保存失败", key, value);
+    //     }
+    // }
+    // private async setConfFile2Async(data: Record<string, any>, time: number) {
+    //     try {
+    //         const source = await getFile("/conf/conf.json");
+    //         const config = { ...source, ...data };
+    //         const jsonString = JSON.stringify(config, null, 2);
+    //         console.log("jsonString", jsonString);
+    //         const blob = new Blob([jsonString], { type: 'application/json' });
+    //         // await fetch("/api/file/removeFile", {
+    //         //     method: "POST",
+    //         //     body: JSON.stringify({ path: "/conf/conf.json" }),
+    //         // })
+    //         await putFile("/conf/conf.json", false, blob);
+    //         window.siyuan.config = config;
+    //         return true;
+    //     } catch (error) {
+    //         console.error("保存失败");
+    //         console.error("Failed to set conf.json file:", error);
+    //         return false;
+    //     }
+    // }
 
 
 
