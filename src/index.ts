@@ -82,19 +82,19 @@ export default class ConfigSyncPlugin extends Plugin {
         this.eventBus.on("sync-end", async () => {
             const localConfig: SyncConfig = await this.getLocalStorageAsync();
             const couldConfig: SyncConfig = await this.loadData(STORAGE_NAME);
-            console.log(localConfig, couldConfig);
+            // console.log(localConfig, couldConfig);
 
             if (JSON.stringify(localConfig) == JSON.stringify(couldConfig)) {
-                console.log("配置无变化");
+                console.log(this.i18n.configSync, "配置无变化");
                 return;
             }
 
             if (couldConfig?.time > localConfig?.time) {
-                console.log("配置下载");
+                console.log(this.i18n.configSync, "配置下载");
                 await this.setLocalStorageAsync(couldConfig);
                 await this.setConfigAsync(couldConfig.data, couldConfig.time);
             } else {
-                console.log("配置上传");
+                console.log(this.i18n.configSync, "配置上传");
                 localConfig.time = Date.now();
                 await this.setLocalStorageAsync(localConfig);
                 await this.saveData(STORAGE_NAME, localConfig);
