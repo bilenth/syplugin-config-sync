@@ -243,7 +243,9 @@ export default class ConfigSyncPlugin extends Plugin {
                     this.syncActions[key].set(data[key]);
                 }
             }
-            this.reloadConfirm(updatedKeys);
+            if (updatedKeys.length > 0) {
+                this.reloadConfirm(updatedKeys);
+            }
         } catch (error) {
             console.error("保存失败", error);
         }
