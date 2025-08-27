@@ -68,7 +68,9 @@ module.exports = (env, argv) => {
         optimization: {
             minimize: true,
             minimizer: [
-                new EsbuildPlugin(),
+                new EsbuildPlugin({
+                    pure: ['console.debug'],
+                }),
             ],
         },
         resolve: {

@@ -97,7 +97,7 @@ export default class ConfigSyncPlugin extends Plugin {
             try {
                 const localConfig: SyncConfig = await this.getLocalStorageAsync();
                 const couldConfig: SyncConfig = await this.loadData(STORAGE_NAME);
-                console.log(localConfig, couldConfig);
+                console.debug(localConfig, couldConfig);
 
                 if (JSON.stringify(localConfig) == JSON.stringify(couldConfig)) {
                     console.log(this.i18n.configSync, "配置无变化");
