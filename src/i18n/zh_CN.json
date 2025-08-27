@@ -5,6 +5,7 @@
   "byeMenu": "再见，菜单！",
   "helloPlugin": "配置同步插件-启动",
   "byePlugin": "配置同步插件-关闭",
+  "uninstallPlugin": "配置同步插件-已卸载插件并清理插件的本地储存",
   "showDialog": "弹出一个对话框",
   "getTab": "在日志中打印出已打开的所有自定义页签",
   "removedData": "数据已删除",

@@ -5,6 +5,7 @@
   "byeMenu": "Bye, Menu!",
   "helloPlugin": "Config Sync Plugin - Start",
   "byePlugin": "Config Sync Plugin - Stop",
+  "uninstallPlugin": "Config Sync Plugin - Uninstall and Clear Local Storage",
   "showDialog": "Show dialog",
   "getTab": "Print out all opened custom tabs in the debugger",
   "removedData": "Data deleted",

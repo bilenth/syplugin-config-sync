@@ -9,7 +9,6 @@ import {
     getFrontend,
     getBackend,
     Setting,
-    fetchPost,
     Protyle,
     openWindow,
     IOperation,
@@ -28,7 +27,7 @@ import {
     openAttributePanel,
     saveLayout,
 } from "siyuan";
-import { readDir, getFile, putFile, getConf } from "./api";
+import { fetchPost, readDir, getFile, putFile, getConf } from "./api";
 import "./index.scss";
 import { IMenuItem } from "siyuan/types";
 
@@ -48,27 +47,42 @@ type SyncConfig = {
     time: number;
 }
 
+type SyncAction = {
+    set: (data: any) => Promise<any>;
+    get?: (data: any) => any;
+    map?: (source: any, data: any) => any;
+    unreload?: boolean;
+};
+
 
 export default class ConfigSyncPlugin extends Plugin {
 
     private isMobile: boolean;
-    private syncActions = {
-        keymap: { set: (data: any) => fetchPost("/api/setting/setKeymap", { data: data }, () => { window.siyuan.config.keymap = data; }) },
-        account: { set: (data: any) => fetchPost("/api/setting/setAccount", data, () => { window.siyuan.config.account = data; }) },
-        editor: { set: (data: any) => fetchPost("/api/setting/setEditor", data, () => { window.siyuan.config.editor = data; }) },
-        export: { set: (data: any) => fetchPost("/api/setting/setExport", data, () => { window.siyuan.config.export = data; }) },
-        filetree: { set: (data: any) => fetchPost("/api/setting/setFiletree", data, () => { window.siyuan.config.filetree = data; }) },
-        search: { set: (data: any) => fetchPost("/api/setting/setSearch", data, () => { window.siyuan.config.search = data; }) },
-        appearance: { set: (data: any) => fetchPost("/api/setting/setAppearance", data, () => { window.siyuan.config.appearance = data; }) },
-        flashcard: { set: (data: any) => fetchPost("/api/setting/setFlashcard", data, () => { window.siyuan.config.flashcard = data; }) },
-        ai: { set: (data: any) => fetchPost("/api/setting/setAI", data, () => { window.siyuan.config.ai = data; }) },
-        bazaar: { set: (data: any) => fetchPost("/api/setting/setBazaar", data, () => { window.siyuan.config.bazaar = data; }) },
-        publish: { set: (data: any) => fetchPost("/api/setting/setPublish", data, () => { window.siyuan.config.publish = data; }) },
-        snippet: { set: (data: any) => fetchPost("/api/setting/setSnippet", data, () => { window.siyuan.config.snippet = data; }) },
-        readonly: { set: (data: any) => fetchPost("/api/setting/setEditorReadOnly", data, () => { window.siyuan.config.readonly = data; }) },
+    private syncActions: Record<string, SyncAction> = {
+        keymap: {
+            set: (data: any) => fetchPost("/api/setting/setKeymap", { data: data }).then((res) => { window.siyuan.config.keymap = data; return res; }),
+            unreload: true,
+        },
+        uiLayout: {
+            set: (data: any) => fetchPost("/api/system/setUILayout", { errorExit: false, layout: data }).then(async (res) => { window.siyuan.config.uiLayout = data; return res; }),
+            get: (data: any) => { const { layout, ...result } = data; return result; },
+            map: (source: any, data: any) => ({ ...data, layout: source.layout }),
+        },
+        account: { set: (data: any) => fetchPost("/api/setting/setAccount", data).then((res) => { window.siyuan.config.account = data; return res; }) },
+        editor: { set: (data: any) => fetchPost("/api/setting/setEditor", data).then((res) => { window.siyuan.config.editor = data; return res; }) },
+        export: { set: (data: any) => fetchPost("/api/setting/setExport", data).then((res) => { window.siyuan.config.export = data; return res; }) },
+        filetree: { set: (data: any) => fetchPost("/api/setting/setFiletree", data).then((res) => { window.siyuan.config.filetree = data; return res; }) },
+        search: { set: (data: any) => fetchPost("/api/setting/setSearch", data).then((res) => { window.siyuan.config.search = data; return res; }) },
+        appearance: { set: (data: any) => fetchPost("/api/setting/setAppearance", data).then((res) => { window.siyuan.config.appearance = data; return res; }) },
+        flashcard: { set: (data: any) => fetchPost("/api/setting/setFlashcard", data).then((res) => { window.siyuan.config.flashcard = data; return res; }) },
+        ai: { set: (data: any) => fetchPost("/api/setting/setAI", data).then((res) => { window.siyuan.config.ai = data; return res; }) },
+        bazaar: { set: (data: any) => fetchPost("/api/setting/setBazaar", data).then((res) => { window.siyuan.config.bazaar = data; return res; }) },
+        publish: { set: (data: any) => fetchPost("/api/setting/setPublish", data).then((res) => { window.siyuan.config.publish = data; return res; }) },
+        snippet: { set: (data: any) => fetchPost("/api/setting/setSnippet", data).then((res) => { window.siyuan.config.snippet = data; return res; }) },
+        readonly: { set: (data: any) => fetchPost("/api/setting/setEditorReadOnly", data).then((res) => { window.siyuan.config.readonly = data; return res; }) },
         // emoji: {set:"/api/setting/setEmoji"},
     };
-    private selectDefault: (keyof typeof this.syncActions)[] = ['account', 'editor', 'filetree', 'search', 'keymap', 'appearance', 'flashcard', 'ai', 'bazaar', 'snippet'];
+    private selectDefault: (keyof typeof this.syncActions)[] = ['account', 'uiLayout', 'editor', 'filetree', 'search', 'keymap', 'appearance', 'flashcard', 'ai', 'bazaar', 'snippet'];
 
 
     async onload() {
@@ -80,24 +94,29 @@ export default class ConfigSyncPlugin extends Plugin {
         }
 
         this.eventBus.on("sync-end", async () => {
-            const localConfig: SyncConfig = await this.getLocalStorageAsync();
-            const couldConfig: SyncConfig = await this.loadData(STORAGE_NAME);
-            // console.log(localConfig, couldConfig);
+            try {
+                const localConfig: SyncConfig = await this.getLocalStorageAsync();
+                const couldConfig: SyncConfig = await this.loadData(STORAGE_NAME);
+                console.log(localConfig, couldConfig);
 
-            if (JSON.stringify(localConfig) == JSON.stringify(couldConfig)) {
-                console.log(this.i18n.configSync, "配置无变化");
-                return;
-            }
+                if (JSON.stringify(localConfig) == JSON.stringify(couldConfig)) {
+                    console.log(this.i18n.configSync, "配置无变化");
+                    return;
+                }
 
-            if (couldConfig?.time > localConfig?.time) {
-                console.log(this.i18n.configSync, "配置下载");
-                await this.setLocalStorageAsync(couldConfig);
-                await this.setConfigAsync(couldConfig.data, couldConfig.time);
-            } else {
-                console.log(this.i18n.configSync, "配置上传");
-                localConfig.time = Date.now();
-                await this.setLocalStorageAsync(localConfig);
-                await this.saveData(STORAGE_NAME, localConfig);
+                if (couldConfig?.time > localConfig?.time) {
+                    console.log(this.i18n.configSync, "配置下载");
+                    await this.setLocalStorageAsync(couldConfig);
+                    await this.setConfigAsync(couldConfig.data, couldConfig.time);
+                } else {
+                    console.log(this.i18n.configSync, "配置上传");
+                    localConfig.time = Date.now();
+                    await this.setLocalStorageAsync(localConfig);
+                    await this.saveData(STORAGE_NAME, localConfig);
+                    await fetch("/api/sync/performSync", { method: "POST", body: JSON.stringify({}) });
+                }
+            } catch (error) {
+                console.error(this.i18n.syncFailed, error);
             }
         });
 
@@ -195,7 +214,6 @@ export default class ConfigSyncPlugin extends Plugin {
 
     private async getLocalStorageAsync(): Promise<SyncConfig> {
         let storage: SyncConfig = this.data[STORAGE_NAME];
-        const time = storage?.time ?? 0;
         if (!storage) {
             storage = await fetch("/api/storage/getLocalStorage", {
                 method: "POST",
@@ -203,6 +221,7 @@ export default class ConfigSyncPlugin extends Plugin {
                 .then(res => res.json() as Promise<IResponse>)
                 .then(res => res.data[STORAGE_NAME]);
         }
+        const time = storage?.time ?? 0;
         const keys = storage?.selectedKeys ?? this.selectDefault;
         const data = await this.getConfigAsync(keys);
         return {
@@ -221,10 +240,10 @@ export default class ConfigSyncPlugin extends Plugin {
 
     private async getConfigAsync(keys: string[]): Promise<Record<string, any>> {
         try {
-            const data = await getConf();
+            const data: Record<string, any> = await getConf();
             let result: Record<string, any> = {};
             keys.forEach(key => {
-                result[key] = (data as Record<string, any>)[key];
+                result[key] = this.syncActions[key].get?.(data[key]) ?? data[key];
             })
             return result;
         } catch (error) {
@@ -235,16 +254,29 @@ export default class ConfigSyncPlugin extends Plugin {
 
     private async setConfigAsync(data: Record<string, any>, time: number) {
         try {
-            const source = await getFile("/conf/conf.json");
+            const source: Record<string, any> = await getConf();
+            const replacer = (key: string, value: any) => {
+                return key === 'activeTime' ? undefined : value;
+            };
             let updatedKeys = [];
+            let reload = false;
+            let tasks = [];
             for (const key in data) {
-                if (this.isSyncActionKey(key) && JSON.stringify(source[key]) !== JSON.stringify(data[key])) {
+                if (this.isSyncActionKey(key) && JSON.stringify(this.syncActions[key].get?.(source[key]) ?? source[key], replacer) !== JSON.stringify(data[key], replacer)) {
                     updatedKeys.push(key);
-                    this.syncActions[key].set(data[key]);
+                    tasks.push(this.syncActions[key].set(this.syncActions[key].map?.(source[key], data[key]) ?? data[key]));
+                    if (this.syncActions[key].unreload == false) {
+                        reload = true;
+                    }
                 }
             }
+            await Promise.all(tasks);
             if (updatedKeys.length > 0) {
-                this.reloadConfirm(updatedKeys);
+                if (reload) {
+                    this.reloadConfirm(updatedKeys);
+                } else {
+                    showMessage(this.i18n.useCloud + ": " + updatedKeys.join(", "), 5000)
+                }
             }
         } catch (error) {
             console.error("保存失败", error);
@@ -255,7 +287,13 @@ export default class ConfigSyncPlugin extends Plugin {
         console.log(this.i18n.byePlugin);
     }
 
-    uninstall() {
-        console.log("uninstall");
+    async uninstall() {
+        // 在这台机子卸载插件可以移除本地缓存，但是其他机子上的缓存就没办法了，如果强迫症，可以在其他机子上安装再卸一次
+        await fetch("removeLocalStorageVals", {
+            method: "POST",
+            body: JSON.stringify({ app: STORAGE_NAME, key: STORAGE_NAME }),
+        })
+        this.removeData(STORAGE_NAME);
+        console.log(this.i18n.uninstallPlugin);
     }
 }

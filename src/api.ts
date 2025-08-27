@@ -23,7 +23,7 @@ import {
 } from './types/api';
 
 
-async function request(url: string, data: any) {
+export async function fetchPost(url: string, data: any) {
   let response: IWebSocketData = await fetchSyncPost(url, data);
   let res = response.code === 0 ? response.data : null;
   return res;
@@ -35,51 +35,51 @@ async function request(url: string, data: any) {
 
 export async function lsNotebooks(): Promise<IReslsNotebooks> {
   let url = '/api/notebook/lsNotebooks';
-  return request(url, '');
+  return fetchPost(url, '');
 }
 
 
 export async function openNotebook(notebook: NotebookId) {
   let url = '/api/notebook/openNotebook';
-  return request(url, { notebook: notebook });
+  return fetchPost(url, { notebook: notebook });
 }
 
 
 export async function closeNotebook(notebook: NotebookId) {
   let url = '/api/notebook/closeNotebook';
-  return request(url, { notebook: notebook });
+  return fetchPost(url, { notebook: notebook });
 }
 
 
 export async function renameNotebook(notebook: NotebookId, name: string) {
   let url = '/api/notebook/renameNotebook';
-  return request(url, { notebook: notebook, name: name });
+  return fetchPost(url, { notebook: notebook, name: name });
 }
 
 
 export async function createNotebook(name: string): Promise<Notebook> {
   let url = '/api/notebook/createNotebook';
-  return request(url, { name: name });
+  return fetchPost(url, { name: name });
 }
 
 
 export async function removeNotebook(notebook: NotebookId) {
   let url = '/api/notebook/removeNotebook';
-  return request(url, { notebook: notebook });
+  return fetchPost(url, { notebook: notebook });
 }
 
 
 export async function getNotebookConf(notebook: NotebookId): Promise<IResGetNotebookConf> {
   let data = { notebook: notebook };
   let url = '/api/notebook/getNotebookConf';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
 export async function setNotebookConf(notebook: NotebookId, conf: NotebookConf): Promise<NotebookConf> {
   let data = { notebook: notebook, conf: conf };
   let url = '/api/notebook/setNotebookConf';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
@@ -91,7 +91,7 @@ export async function createDocWithMd(notebook: NotebookId, path: string, markdo
     markdown: markdown,
   };
   let url = '/api/filetree/createDocWithMd';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
@@ -102,7 +102,7 @@ export async function renameDoc(notebook: NotebookId, path: string, title: strin
     title: title
   };
   let url = '/api/filetree/renameDoc';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
@@ -112,7 +112,7 @@ export async function removeDoc(notebook: NotebookId, path: string) {
     path: path,
   };
   let url = '/api/filetree/removeDoc';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
@@ -123,7 +123,7 @@ export async function moveDocs(fromPaths: string[], toNotebook: NotebookId, toPa
     toPath: toPath
   };
   let url = '/api/filetree/moveDocs';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
@@ -133,7 +133,7 @@ export async function getHPathByPath(notebook: NotebookId, path: string): Promis
     path: path
   };
   let url = '/api/filetree/getHPathByPath';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
@@ -142,7 +142,7 @@ export async function getHPathByID(id: BlockId): Promise<string> {
     id: id
   };
   let url = '/api/filetree/getHPathByID';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 // **************************************** Asset Files ****************************************
@@ -154,7 +154,7 @@ export async function upload(assetsDirPath: string, files: any[]): Promise<IResU
     form.append('file[]', file);
   }
   let url = '/api/asset/upload';
-  return request(url, form);
+  return fetchPost(url, form);
 }
 
 // **************************************** Block ****************************************
@@ -171,7 +171,7 @@ export async function insertBlock(
     parentID: parentID
   }
   let url = '/api/block/insertBlock';
-  return request(url, payload);
+  return fetchPost(url, payload);
 }
 
 
@@ -182,7 +182,7 @@ export async function prependBlock(dataType: DataType, data: string, parentID: B
     parentID: parentID
   }
   let url = '/api/block/prependBlock';
-  return request(url, payload);
+  return fetchPost(url, payload);
 }
 
 
@@ -193,7 +193,7 @@ export async function appendBlock(dataType: DataType, data: string, parentID: Bl
     parentID: parentID
   }
   let url = '/api/block/appendBlock';
-  return request(url, payload);
+  return fetchPost(url, payload);
 }
 
 
@@ -204,7 +204,7 @@ export async function updateBlock(dataType: DataType, data: string, id: BlockId)
     id: id
   }
   let url = '/api/block/updateBlock';
-  return request(url, payload);
+  return fetchPost(url, payload);
 }
 
 
@@ -213,7 +213,7 @@ export async function deleteBlock(id: BlockId): Promise<IResdoOperations[]> {
     id: id
   }
   let url = '/api/block/deleteBlock';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
@@ -224,7 +224,7 @@ export async function moveBlock(id: BlockId, previousID?: PreviousID, parentID?:
     parentID: parentID
   }
   let url = '/api/block/moveBlock';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
@@ -233,7 +233,7 @@ export async function getBlockKramdown(id: BlockId): Promise<IResGetBlockKramdow
     id: id
   }
   let url = '/api/block/getBlockKramdown';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
@@ -242,7 +242,7 @@ export async function getChildBlocks(id: BlockId): Promise<IResGetChildBlock[]> 
     id: id
   }
   let url = '/api/block/getChildBlocks';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 export async function transferBlockRef(fromID: BlockId, toID: BlockId, refIDs: BlockId[]) {
@@ -252,7 +252,7 @@ export async function transferBlockRef(fromID: BlockId, toID: BlockId, refIDs: B
     refIDs: refIDs
   }
   let url = '/api/block/transferBlockRef';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 // **************************************** Attributes ****************************************
@@ -262,7 +262,7 @@ export async function setBlockAttrs(id: BlockId, attrs: { [key: string]: string 
     attrs: attrs
   }
   let url = '/api/attr/setBlockAttrs';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
@@ -271,7 +271,7 @@ export async function getBlockAttrs(id: BlockId): Promise<{ [key: string]: strin
     id: id
   }
   let url = '/api/attr/getBlockAttrs';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 // **************************************** SQL ****************************************
@@ -281,7 +281,7 @@ export async function sql(sql: string): Promise<any[]> {
     stmt: sql,
   };
   let url = '/api/query/sql';
-  return request(url, sqldata);
+  return fetchPost(url, sqldata);
 }
 
 export async function getBlockByID(blockId: string): Promise<Block> {
@@ -298,13 +298,13 @@ export async function render(id: DocumentId, path: string): Promise<IResGetTempl
     path: path
   }
   let url = '/api/template/render';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
 export async function renderSprig(template: string): Promise<string> {
   let url = '/api/template/renderSprig';
-  return request(url, { template: template });
+  return fetchPost(url, { template: template });
 }
 
 // **************************************** File ****************************************
@@ -331,7 +331,7 @@ export async function putFile(path: string, isDir: boolean, file: any) {
   form.append('modTime', Math.floor(Date.now() / 1000).toString());
   form.append('file', file);
   let url = '/api/file/putFile';
-  return request(url, form);
+  return fetchPost(url, form);
 }
 
 export async function removeFile(path: string) {
@@ -339,7 +339,7 @@ export async function removeFile(path: string) {
     path: path
   }
   let url = '/api/file/removeFile';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
@@ -349,7 +349,7 @@ export async function readDir(path: string): Promise<IResReadDir[]> {
     path: path
   }
   let url = '/api/file/readDir';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 
@@ -360,7 +360,7 @@ export async function exportMdContent(id: DocumentId): Promise<IResExportMdConte
     id: id
   }
   let url = '/api/export/exportMdContent';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 export async function exportResources(paths: string[], name: string): Promise<IResExportResources> {
@@ -369,7 +369,7 @@ export async function exportResources(paths: string[], name: string): Promise<IR
     name: name
   }
   let url = '/api/export/exportResources';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 // **************************************** Convert ****************************************
@@ -380,7 +380,7 @@ export async function pandoc(args: PandocArgs[]) {
     args: args
   }
   let url = '/api/convert/pandoc';
-  return request(url, data);
+  return fetchPost(url, data);
 }
 
 // **************************************** Notification ****************************************
@@ -396,7 +396,7 @@ export async function pushMsg(msg: string, timeout: number = 7000) {
     timeout: timeout
   };
   let url = "/api/notification/pushMsg";
-  return request(url, payload);
+  return fetchPost(url, payload);
 }
 
 export async function pushErrMsg(msg: string, timeout: number = 7000) {
@@ -405,7 +405,7 @@ export async function pushErrMsg(msg: string, timeout: number = 7000) {
     timeout: timeout
   };
   let url = "/api/notification/pushErrMsg";
-  return request(url, payload);
+  return fetchPost(url, payload);
 }
 
 // **************************************** Network ****************************************
@@ -422,26 +422,26 @@ export async function forwardProxy(
     payload: payload
   }
   let url1 = '/api/network/forwardProxy';
-  return request(url1, data);
+  return fetchPost(url1, data);
 }
 
 
 // **************************************** System ****************************************
 
 export async function getConf(): Promise<Config.IConf> {
-  return request('/api/system/getConf', {}).then(res => res.conf as Config.IConf);
+  return fetchPost('/api/system/getConf', {}).then(res => res.conf as Config.IConf);
 }
 
 export async function bootProgress(): Promise<IResBootProgress> {
-  return request('/api/system/bootProgress', {});
+  return fetchPost('/api/system/bootProgress', {});
 }
 
 
 export async function version(): Promise<string> {
-  return request('/api/system/version', {});
+  return fetchPost('/api/system/version', {});
 }
 
 
 export async function currentTime(): Promise<number> {
-  return request('/api/system/currentTime', {});
+  return fetchPost('/api/system/currentTime', {});
 }
