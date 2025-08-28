@@ -265,7 +265,7 @@ export default class ConfigSyncPlugin extends Plugin {
                 if (this.isSyncActionKey(key) && JSON.stringify(this.syncActions[key].get?.(source[key]) ?? source[key], replacer) !== JSON.stringify(data[key], replacer)) {
                     updatedKeys.push(key);
                     tasks.push(this.syncActions[key].set(this.syncActions[key].map?.(source[key], data[key]) ?? data[key]));
-                    if (this.syncActions[key].unreload == false) {
+                    if (!reload && this.syncActions[key].unreload !== true) {
                         reload = true;
                     }
                 }
