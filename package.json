@@ -1,33 +1,41 @@
 {
-  "name": "plugin-sample",
-  "version": "0.4.1",
-  "description": "This is a sample plugin for Siyuan (https://b3log.org/siyuan)",
-  "main": ".src/index.js",
-  "scripts": {
-    "lint": "eslint . --fix --cache",
-    "dev": "webpack --mode development",
-    "watch": "webpack --mode development --output-path dist",
-    "build": "webpack --mode production"
-  },
-  "keywords": [],
-  "author": "Vanessa",
+  "name": "syplugin-config-sync",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Sync selected global configuration values",
+  "repository": "",
+  "homepage": "",
+  "author": "frostime",
   "license": "MIT",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch",
+    "build": "cross-env NODE_ENV=production vite build",
+    "make-link": "node --no-warnings ./scripts/make_dev_link.js",
+    "make-link-win": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/elevate.ps1 -scriptPath ./scripts/make_dev_link.js",
+    "update-version": "node --no-warnings ./scripts/update_version.js",
+    "make-install": "vite build && node --no-warnings ./scripts/make_install.js"
+  },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "8.40.0",
-    "@typescript-eslint/parser": "8.40.0",
-    "copy-webpack-plugin": "^11.0.0",
-    "css-loader": "^6.7.1",
-    "esbuild-loader": "^3.0.1",
-    "eslint": "^9.33.0",
-    "mini-css-extract-plugin": "2.3.0",
-    "sass": "^1.62.1",
-    "sass-loader": "^12.6.0",
+    "@sveltejs/vite-plugin-svelte": "^3.1.0",
+    "@tsconfig/svelte": "^4.0.1",
+    "@types/lodash": "^4.17.20",
+    "@types/node": "^20.3.0",
+    "cross-env": "^7.0.3",
+    "fast-glob": "^3.2.12",
+    "glob": "^10.0.0",
+    "js-yaml": "^4.1.0",
+    "minimist": "^1.2.8",
+    "rollup-plugin-livereload": "^2.0.5",
+    "sass": "^1.63.3",
     "siyuan": "1.1.2",
-    "tslib": "2.4.0",
-    "typescript": "4.8.4",
-    "webpack": "^5.76.0",
-    "webpack-cli": "^5.0.2",
-    "zip-webpack-plugin": "^4.0.1",
-    "globals": "^16.3.0"
+    "svelte": "^4.2.20",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.3",
+    "vite": "^5.2.9",
+    "vite-plugin-static-copy": "^1.0.2",
+    "vite-plugin-zip-pack": "^1.0.5"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
   }
 }

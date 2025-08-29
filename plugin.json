@@ -1,8 +1,8 @@
 {
   "name": "syplugin-config-sync",
   "author": "Brian",
-  "url": "https://github.com/yourusername/syplugin-config-sync",
-  "version": "0.1.6",
+  "url": "https://github.com/bilenth/syplugin-config-sync",
+  "version": "0.2.0",
   "minAppVersion": "3.2.1",
   "backends": [
     "windows",
@@ -19,22 +19,21 @@
     "desktop-window"
   ],
   "displayName": {
-    "default": "Config Sync",
+    "en_US": "Config Sync",
     "zh_CN": "配置同步"
   },
   "description": {
-    "default": "Sync selected global configuration values",
-    "zh_CN": "同步选定的配置值，比如快捷键、外观等"
+    "en_US": "Sync your preferred configuration items during cloud synchronization, such as keyboard shortcuts, layouts, etc.",
+    "zh_CN": "在执行云端同步时，带上你想同步的配置项，比如快捷键、布局等"
   },
   "readme": {
-    "default": "README.md",
+    "en_US": "README.md",
     "zh_CN": "README_zh_CN.md"
   },
   "funding": {
-    "openCollective": "",
-    "patreon": "",
-    "github": "",
-    "custom": []
+    "custom": [
+      ""
+    ]
   },
   "keywords": [
     "config",

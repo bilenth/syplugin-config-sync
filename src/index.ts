@@ -8,7 +8,8 @@ import {
     adaptHotkey,
     getFrontend,
     getBackend,
-    Setting,
+    // Setting,
+    // fetchPost,
     Protyle,
     openWindow,
     IOperation,
@@ -25,11 +26,20 @@ import {
     platformUtils,
     openSetting,
     openAttributePanel,
-    saveLayout,
+    IWebSocketData,
+    saveLayout
 } from "siyuan";
-import { fetchPost, readDir, getFile, putFile, getConf } from "./api";
+import { request, readDir, getFile, putFile, getConf } from "./api";
 import "./index.scss";
+import isEqualWith from "lodash/isEqualWith";
+import isNaN from "lodash/isNaN";
 import { IMenuItem } from "siyuan/types";
+
+import HelloExample from "@/hello.svelte";
+import SettingExample from "@/setting-example.svelte";
+
+import { SettingUtils } from "./libs/setting-utils";
+import { svelteDialog } from "./libs/dialog";
 
 const STORAGE_NAME = "config-sync";
 const TAB_TYPE = "custom_tab";
@@ -41,11 +51,14 @@ export interface IResponse {
     readonly msg: string;
 }
 
-type SyncConfig = {
-    selectedKeys: string[];
+type SyncData = {
     data: Record<string, any>;
-    time: number;
+    version: number;
 }
+
+type PluginData = {
+    keys: string[];
+} & SyncData
 
 type SyncAction = {
     set: (data: any) => Promise<any>;
@@ -60,31 +73,31 @@ export default class ConfigSyncPlugin extends Plugin {
     private isMobile: boolean;
     private syncActions: Record<string, SyncAction> = {
         keymap: {
-            set: (data: any) => fetchPost("/api/setting/setKeymap", { data: data }).then((res) => { window.siyuan.config.keymap = data; return res; }),
+            set: (data: any) => request("/api/setting/setKeymap", { data: data }).then((res) => { window.siyuan.config.keymap = data; return res; }),
             unreload: true,
         },
         uiLayout: {
-            set: (data: any) => fetchPost("/api/system/setUILayout", { errorExit: false, layout: data }).then(async (res) => { window.siyuan.config.uiLayout = data; return res; }),
+            set: (data: any) => request("/api/system/setUILayout", { errorExit: false, layout: data }).then(async (res) => { window.siyuan.config.uiLayout = data; return res; }),
             get: (data: any) => { const { layout, ...result } = data; return result; },
             map: (source: any, data: any) => ({ ...data, layout: source.layout }),
         },
-        account: { set: (data: any) => fetchPost("/api/setting/setAccount", data).then((res) => { window.siyuan.config.account = data; return res; }) },
-        editor: { set: (data: any) => fetchPost("/api/setting/setEditor", data).then((res) => { window.siyuan.config.editor = data; return res; }) },
-        export: { set: (data: any) => fetchPost("/api/setting/setExport", data).then((res) => { window.siyuan.config.export = data; return res; }) },
-        filetree: { set: (data: any) => fetchPost("/api/setting/setFiletree", data).then((res) => { window.siyuan.config.filetree = data; return res; }) },
-        search: { set: (data: any) => fetchPost("/api/setting/setSearch", data).then((res) => { window.siyuan.config.search = data; return res; }) },
-        appearance: { set: (data: any) => fetchPost("/api/setting/setAppearance", data).then((res) => { window.siyuan.config.appearance = data; return res; }) },
-        flashcard: { set: (data: any) => fetchPost("/api/setting/setFlashcard", data).then((res) => { window.siyuan.config.flashcard = data; return res; }) },
-        ai: { set: (data: any) => fetchPost("/api/setting/setAI", data).then((res) => { window.siyuan.config.ai = data; return res; }) },
-        bazaar: { set: (data: any) => fetchPost("/api/setting/setBazaar", data).then((res) => { window.siyuan.config.bazaar = data; return res; }) },
-        publish: { set: (data: any) => fetchPost("/api/setting/setPublish", data).then((res) => { window.siyuan.config.publish = data; return res; }) },
-        snippet: { set: (data: any) => fetchPost("/api/setting/setSnippet", data).then((res) => { window.siyuan.config.snippet = data; return res; }) },
-        readonly: { set: (data: any) => fetchPost("/api/setting/setEditorReadOnly", data).then((res) => { window.siyuan.config.readonly = data; return res; }) },
+        account: { set: (data: any) => request("/api/setting/setAccount", data).then((res) => { window.siyuan.config.account = data; return res; }) },
+        editor: { set: (data: any) => request("/api/setting/setEditor", data).then((res) => { window.siyuan.config.editor = data; return res; }) },
+        export: { set: (data: any) => request("/api/setting/setExport", data).then((res) => { window.siyuan.config.export = data; return res; }) },
+        filetree: { set: (data: any) => request("/api/setting/setFiletree", data).then((res) => { window.siyuan.config.filetree = data; return res; }) },
+        search: { set: (data: any) => request("/api/setting/setSearch", data).then((res) => { window.siyuan.config.search = data; return res; }) },
+        appearance: { set: (data: any) => request("/api/setting/setAppearance", data).then((res) => { window.siyuan.config.appearance = data; return res; }) },
+        flashcard: { set: (data: any) => request("/api/setting/setFlashcard", data).then((res) => { window.siyuan.config.flashcard = data; return res; }) },
+        ai: { set: (data: any) => request("/api/setting/setAI", data).then((res) => { window.siyuan.config.ai = data; return res; }) },
+        bazaar: { set: (data: any) => request("/api/setting/setBazaar", data).then((res) => { window.siyuan.config.bazaar = data; return res; }) },
+        publish: { set: (data: any) => request("/api/setting/setPublish", data).then((res) => { window.siyuan.config.publish = data; return res; }) },
+        snippet: { set: (data: any) => request("/api/setting/setSnippet", data).then((res) => { window.siyuan.config.snippet = data; return res; }) },
+        readonly: { set: (data: any) => request("/api/setting/setEditorReadOnly", data).then((res) => { window.siyuan.config.readonly = data; return res; }) },
         // emoji: {set:"/api/setting/setEmoji"},
     };
     private selectDefault: (keyof typeof this.syncActions)[] = ['account', 'uiLayout', 'editor', 'filetree', 'search', 'keymap', 'appearance', 'flashcard', 'ai', 'bazaar', 'snippet'];
 
-
+    // override
     async onload() {
         const frontEnd = getFrontend();
         this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
@@ -93,32 +106,24 @@ export default class ConfigSyncPlugin extends Plugin {
             return;
         }
 
+        const pluginData = await this.pluginData.get();
+        await this.configSync(pluginData);
+
         this.eventBus.on("sync-end", async () => {
-            try {
-                const localConfig: SyncConfig = await this.getLocalStorageAsync();
-                const couldConfig: SyncConfig = await this.loadData(STORAGE_NAME);
-                console.debug(localConfig, couldConfig);
-
-                if (JSON.stringify(localConfig) == JSON.stringify(couldConfig)) {
-                    console.log(this.i18n.configSync, "配置无变化");
-                    return;
-                }
-
-                if (couldConfig?.time > localConfig?.time) {
-                    console.log(this.i18n.configSync, "配置下载");
-                    await this.setLocalStorageAsync(couldConfig);
-                    await this.setConfigAsync(couldConfig.data, couldConfig.time);
-                } else {
-                    console.log(this.i18n.configSync, "配置上传");
-                    localConfig.time = Date.now();
-                    await this.setLocalStorageAsync(localConfig);
-                    await this.saveData(STORAGE_NAME, localConfig);
-                    await fetch("/api/sync/performSync", { method: "POST", body: JSON.stringify({}) });
-                }
-            } catch (error) {
-                console.error(this.i18n.syncFailed, error);
-            }
+            const pluginData = await this.pluginData.get();
+            await this.configSync(pluginData);
         });
+
+        console.log(this.i18n.helloPlugin);
+    }
+
+    // override
+    async onLayoutReady() {
+        // const pluginData: PluginData = await this.pluginData.get();
+        // console.log("pluginData", pluginData);
+        // const { keys, ...cloudData } = pluginData;
+        // const localData: SyncData = await this.localData.get(keys);
+        // await this.showConflictDialog({ data: {}, version: 0 }, cloudData, keys);
 
         // 图标的制作参见帮助文档
         this.addIcons(`<symbol id="iconConfigSync" viewBox="0 0 32 32">
@@ -139,13 +144,11 @@ export default class ConfigSyncPlugin extends Plugin {
                 this.openSetting();
             }
         });
-
-        console.log(this.i18n.helloPlugin);
     }
 
-    // 自定义设置
+    // override
     async openSetting() {
-        const selectedKeys = (await this.getLocalStorageAsync()).selectedKeys;
+        const selectedKeys = (await this.pluginData.get()).keys;
         // 生成复选框列表HTML
         const checkboxList = Object.keys(this.syncActions).map(option => {
             const isChecked = selectedKeys.includes(option) ? 'checked' : '';
@@ -189,13 +192,24 @@ export default class ConfigSyncPlugin extends Plugin {
                 }
             });
             // 更新selectDefault
-            const localConfig = await this.getLocalStorageAsync();
-            localConfig.selectedKeys = selectedOptions;
-            localConfig.time = Date.now();
-            await this.setLocalStorageAsync(localConfig);
-            this.saveData(STORAGE_NAME, localConfig);
+            const pluginData = await this.pluginData.get();
+            pluginData.keys = selectedOptions;
+            await this.configSync(pluginData);
             dialog.destroy();
         });
+    }
+
+    // override
+    onunload() {
+        console.log(this.i18n.byePlugin);
+    }
+
+    // override
+    async uninstall() {
+        // 在这台机子卸载插件可以移除本地缓存，但是其他机子上的缓存就没办法了，如果强迫症，可以在其他机子上安装再卸一次
+        await request("/api/storage/removeLocalStorageVals", { keys: [STORAGE_NAME] });
+        this.removeData(STORAGE_NAME);
+        console.log(this.i18n.uninstallPlugin);
     }
 
     private isSyncActionKey(key: string): key is keyof typeof this.syncActions {
@@ -205,64 +219,178 @@ export default class ConfigSyncPlugin extends Plugin {
     private reloadConfirm(keys: string[]) {
         confirm(
             this.i18n.configSyncReload,
-            JSON.stringify(keys),
+            keys.join(", "),
             () => {
                 window.location.reload();
             }
         )
     }
 
-    private async getLocalStorageAsync(): Promise<SyncConfig> {
-        let storage: SyncConfig = this.data[STORAGE_NAME];
-        if (!storage) {
-            storage = await fetch("/api/storage/getLocalStorage", {
-                method: "POST",
-            })
-                .then(res => res.json() as Promise<IResponse>)
-                .then(res => res.data[STORAGE_NAME]);
-        }
-        const time = storage?.time ?? 0;
-        const keys = storage?.selectedKeys ?? this.selectDefault;
-        const data = await this.getConfigAsync(keys);
-        return {
-            selectedKeys: keys,
-            data: data,
-            time: time,
-        };
-    }
-
-    private async setLocalStorageAsync(config: SyncConfig) {
-        return await fetch("/api/storage/setLocalStorageVal", {
-            method: "POST",
-            body: JSON.stringify({ app: STORAGE_NAME, key: STORAGE_NAME, val: config }),
-        })
-    }
-
-    private async getConfigAsync(keys: string[]): Promise<Record<string, any>> {
-        try {
-            const data: Record<string, any> = await getConf();
-            let result: Record<string, any> = {};
+    private pruneData = (data: Record<string, any>, keys: string[]) => {
+        let result: Record<string, any> = {};
+        if (Array.isArray(keys)) {
             keys.forEach(key => {
-                result[key] = this.syncActions[key].get?.(data[key]) ?? data[key];
-            })
+                if (this.isSyncActionKey(key) && data[key] !== undefined) {
+                    result[key] = this.syncActions[key].get?.(data[key]) ?? data[key];
+                }
+            });
+        }
+        return result;
+    }
+    private graftData = (source: Record<string, any>, part: Record<string, any>) => {
+        if (!source) source = {};
+        if (!part) return source;
+        Object.keys(part).forEach(key => {
+            if (this.isSyncActionKey(key)) {
+                source[key] = this.syncActions[key].map?.(source[key], part[key]) ?? part[key];
+            }
+        })
+        return source;
+    }
+
+    private isSpecialValue = (value: any) => isNaN(value) || value === null || value === undefined;
+    private specialEquality = (a: any, b: any) => {
+        if (this.isSpecialValue(a) && this.isSpecialValue(b)) {
+            return true;
+        }
+        return undefined;
+    }
+    private currentData = {
+        get: (keys: string[]) => this.pruneData(window.siyuan.config, keys),
+        set: (data: Record<string, any>) => {
+            window.siyuan.config = this.graftData(window.siyuan.config, data);
+        }
+    };
+    private localData = {
+        get: async (keys: string[]): Promise<SyncData> => {
+            const result: SyncData = await request("/api/storage/getLocalStorage", {}).then(data => data[STORAGE_NAME]) ?? { data: {}, version: 0 };
+            const currentData = this.currentData.get(keys);
+            if (!isEqualWith(result.data, currentData, this.specialEquality)) {
+                result.data = currentData;
+                result.version++;
+            }
+            if (isNaN(result.version)) result.version = 0;
+            if ('keys' in result) delete result.keys;
+            if ('selectedKeys' in result) delete result.selectedKeys;
+            if ('time' in result) delete result.time;
             return result;
-        } catch (error) {
-            console.error("Failed to get conf.json file:", error);
-            return null;
+        },
+        set: async (data: SyncData) => {
+            await request("/api/storage/setLocalStorageVal", { key: STORAGE_NAME, val: data });
+        }
+    };
+    private pluginData = {
+        get: async (): Promise<PluginData> => {
+            let pluginData = await this.loadData(STORAGE_NAME);
+            if (!pluginData) {
+                pluginData = { keys: this.selectDefault, data: {}, version: -1 };
+            }
+            if (pluginData.keys === undefined && pluginData.selectedKeys) {
+                pluginData.keys = pluginData.selectedKeys;
+            }
+            if (isNaN(pluginData.version)) pluginData.version = -1;
+            if ('selectedKeys' in pluginData) delete pluginData.selectedKeys;
+            if ('time' in pluginData) delete pluginData.time;
+            return pluginData;
+        },
+        set: async (data: PluginData) => {
+            await this.saveData(STORAGE_NAME, data);
         }
     }
 
-    private async setConfigAsync(data: Record<string, any>, time: number) {
+    private async configSync(pluginData: PluginData) {
+        try {
+            const localData: SyncData = await this.localData.get(pluginData.keys);
+            const { keys, ...cloudData } = pluginData;
+            console.debug(localData, cloudData);
+
+            if (isEqualWith(localData.data, cloudData.data, this.specialEquality)) {
+                console.log(this.i18n.configSync, "配置无变化");
+                return;
+            }
+
+            await this.syncData(localData, cloudData, keys);
+        } catch (error) {
+            console.error(this.i18n.syncFailed, error);
+        }
+    }
+
+    private async syncData(localData: SyncData, cloudData: SyncData, keys: string[]) {
+        if (cloudData.version > localData.version) {
+            console.log(this.i18n.configSync, "配置下载");
+            await this.localData.set(cloudData);
+            await this.setConfigAsync(cloudData.data);
+        } else if (localData.version > cloudData.version) {
+            console.log(this.i18n.configSync, "配置上传");
+            await this.localData.set(localData);
+            await this.saveData(STORAGE_NAME, { keys: keys, ...localData });
+            await request("/api/sync/performSync", {}); // 需要触发一次上传同步
+        } else {
+            console.log(this.i18n.configSync, "配置冲突");
+            await this.showConflictDialog(localData, cloudData, keys);
+        }
+    }
+
+    private async showConflictDialog(localData: SyncData, cloudData: SyncData, keys: string[]) {
+        const diffKeys = keys.filter(key => !isEqualWith(localData.data[key], cloudData.data[key], this.specialEquality));
+        if (diffKeys.length === 0) {
+            console.log(this.i18n.configSync, "配置无变化");
+            return;
+        }
+        const diffContent = diffKeys.map(key => {
+            const localStr = JSON.stringify(localData.data[key], null, 2);
+            const cloudStr = JSON.stringify(cloudData.data[key], null, 2);
+            return `
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div style="flex: 1; border: 1px solid var(--b3-border-color); padding: 10px; display: flex; flex-direction: column; overflow: hidden;">
+                        <h5>Local: ${key}</h5>
+                        <textarea readonly style="flex-grow: 1; resize: vertical; height: 100px; background-color: transparent; border: none; font-family: var(--b3-font-family-code); white-space: pre; overflow-wrap: normal; overflow-x: auto;">${localStr}</textarea>
+                    </div>
+                    <div style="flex: 1; border: 1px solid var(--b3-border-color); padding: 10px; display: flex; flex-direction: column; overflow: hidden;">
+                        <h5>Cloud: ${key}</h5>
+                        <textarea readonly style="flex-grow: 1; resize: vertical; height: 100px; background-color: transparent; border: none; font-family: var(--b3-font-family-code); white-space: pre; overflow-wrap: normal; overflow-x: auto;">${cloudStr}</textarea>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        const content = `<div class="b3-dialog__content" style="max-height: 70vh; overflow: auto;">
+                            <p style="margin-bottom: 10px;">${this.i18n.conflictTip}</p>
+                            ${diffContent}
+                         </div>
+                         <div class="b3-dialog__action">
+                            <button class="b3-button b3-button--text useLocalBtn">${this.i18n.useLocal}</button>
+                            <div class="fn__space"></div>
+                            <button class="b3-button b3-button--text useCloudBtn">${this.i18n.useCloud}</button>
+                         </div>`;
+
+        const dialog = new Dialog({
+            title: this.i18n.syncConflict,
+            content: content,
+            width: this.isMobile ? "92vw" : "80vw",
+        });
+        const useLocalBtn = dialog.element.querySelector(".useLocalBtn");
+        const useCloudBtn = dialog.element.querySelector(".useCloudBtn");
+        useLocalBtn.addEventListener("click", async () => {
+            localData.version += Math.max(localData.version, cloudData.version) + 1;
+            await this.syncData(localData, cloudData, keys);
+            dialog.destroy();
+        });
+        useCloudBtn.addEventListener("click", async () => {
+            cloudData.version += Math.max(localData.version, cloudData.version) + 1;
+            await this.syncData(localData, cloudData, keys);
+            dialog.destroy();
+        });
+    }
+
+    private async setConfigAsync(data: Record<string, any>) {
         try {
             const source: Record<string, any> = await getConf();
-            const replacer = (key: string, value: any) => {
-                return key === 'activeTime' ? undefined : value;
-            };
             let updatedKeys = [];
             let reload = false;
             let tasks = [];
             for (const key in data) {
-                if (this.isSyncActionKey(key) && JSON.stringify(this.syncActions[key].get?.(source[key]) ?? source[key], replacer) !== JSON.stringify(data[key], replacer)) {
+                if (this.isSyncActionKey(key) && !isEqualWith(this.syncActions[key].get?.(source[key]) ?? source[key], data[key], this.specialEquality)) {
                     updatedKeys.push(key);
                     tasks.push(this.syncActions[key].set(this.syncActions[key].map?.(source[key], data[key]) ?? data[key]));
                     if (!reload && this.syncActions[key].unreload !== true) {
@@ -283,17 +411,4 @@ export default class ConfigSyncPlugin extends Plugin {
         }
     }
 
-    onunload() {
-        console.log(this.i18n.byePlugin);
-    }
-
-    async uninstall() {
-        // 在这台机子卸载插件可以移除本地缓存，但是其他机子上的缓存就没办法了，如果强迫症，可以在其他机子上安装再卸一次
-        await fetch("removeLocalStorageVals", {
-            method: "POST",
-            body: JSON.stringify({ app: STORAGE_NAME, key: STORAGE_NAME }),
-        })
-        this.removeData(STORAGE_NAME);
-        console.log(this.i18n.uninstallPlugin);
-    }
 }
