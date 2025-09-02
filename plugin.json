@@ -2,7 +2,7 @@
   "name": "syplugin-config-sync",
   "author": "Brian",
   "url": "https://github.com/bilenth/syplugin-config-sync",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "minAppVersion": "3.2.1",
   "backends": [
     "windows",
@@ -24,7 +24,7 @@
   },
   "description": {
     "en_US": "Sync your preferred configuration items during cloud synchronization, such as keyboard shortcuts, layouts, etc.",
-    "zh_CN": "在执行云端同步时，带上你想同步的配置项，比如快捷键、布局等"
+    "zh_CN": "在执行云端同步时，带上想要同步的配置项，比如快捷键、布局等"
   },
   "readme": {
     "en_US": "README.md",

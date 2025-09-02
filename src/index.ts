@@ -68,6 +68,14 @@ type SyncAction = {
 };
 
 
+function getMax(a: number | null | undefined, b: number | null | undefined): number {
+    const numA = Number(a);
+    const numB = Number(b);
+    const safeA = Number.isNaN(numA) ? 0 : numA;
+    const safeB = Number.isNaN(numB) ? 0 : numB;
+    return Math.max(safeA, safeB);
+}
+
 export default class ConfigSyncPlugin extends Plugin {
 
     private isMobile: boolean;
@@ -269,7 +277,7 @@ export default class ConfigSyncPlugin extends Plugin {
                 result.data = currentData;
                 result.version++;
             }
-            if (isNaN(result.version)) result.version = 0;
+            if (result.version === undefined || result.version === null || isNaN(result.version)) result.version = 0;
             if ('keys' in result) delete result.keys;
             if ('selectedKeys' in result) delete result.selectedKeys;
             if ('time' in result) delete result.time;
@@ -288,7 +296,7 @@ export default class ConfigSyncPlugin extends Plugin {
             if (pluginData.keys === undefined && pluginData.selectedKeys) {
                 pluginData.keys = pluginData.selectedKeys;
             }
-            if (isNaN(pluginData.version)) pluginData.version = -1;
+            if (pluginData.version === undefined || pluginData.version === null || isNaN(pluginData.version)) pluginData.version = -1;
             if ('selectedKeys' in pluginData) delete pluginData.selectedKeys;
             if ('time' in pluginData) delete pluginData.time;
             return pluginData;
@@ -372,12 +380,12 @@ export default class ConfigSyncPlugin extends Plugin {
         const useLocalBtn = dialog.element.querySelector(".useLocalBtn");
         const useCloudBtn = dialog.element.querySelector(".useCloudBtn");
         useLocalBtn.addEventListener("click", async () => {
-            localData.version += Math.max(localData.version, cloudData.version) + 1;
+            localData.version = getMax(localData.version, cloudData.version) + 1;
             await this.syncData(localData, cloudData, keys);
             dialog.destroy();
         });
         useCloudBtn.addEventListener("click", async () => {
-            cloudData.version += Math.max(localData.version, cloudData.version) + 1;
+            cloudData.version = getMax(localData.version, cloudData.version) + 1;
             await this.syncData(localData, cloudData, keys);
             dialog.destroy();
         });
@@ -410,5 +418,4 @@ export default class ConfigSyncPlugin extends Plugin {
             console.error("保存失败", error);
         }
     }
-
 }

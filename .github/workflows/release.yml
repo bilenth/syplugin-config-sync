@@ -81,7 +81,7 @@ jobs:
         if: steps.compare_versions.conclusion == 'success'
         uses: ncipollo/release-action@v1
         with:
-          tag_name: v${{ steps.get_version.outputs.version }}
+          tag: v${{ steps.get_version.outputs.version }}
           allowUpdates: true
           artifactErrorsFailBuild: true
           artifacts: "package.zip"
